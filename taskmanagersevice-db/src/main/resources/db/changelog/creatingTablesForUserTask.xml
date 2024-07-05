@@ -4,7 +4,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="create tables for User Service" author="Rodion">
+    <changeSet id="create tables for User Service 2" author="Rodion">
         <createTable tableName="user">
             <column name="id" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
@@ -17,7 +17,7 @@
                 <constraints unique="true" nullable="false"/>
             </column>
             <column name="role" type="varchar(10)">
-                <constraints nullable="false" checkConstraint="role in ('USER', 'ADMIN')"/>
+                <constraints nullable="false" checkConstraint="role in ('ROLE_USER', 'ROLE_ADMIN')"/>
             </column>
             <column name="is_active" type="boolean" defaultValue="false">
                 <constraints nullable="false"/>

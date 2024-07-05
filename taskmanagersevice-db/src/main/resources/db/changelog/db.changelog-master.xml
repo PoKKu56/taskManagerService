@@ -5,6 +5,5 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <include file="src/main/resources/db/changelog/creatingTablesForUserTask.xml"/>
-    <include file="src/main/resources/db/changelog/dropTablePerson.xml"/>
 
 </databaseChangeLog>

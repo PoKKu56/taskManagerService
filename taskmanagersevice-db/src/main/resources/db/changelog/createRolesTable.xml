@@ -1,0 +1,12 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog">
+
+    <changeSet id="creating role's table 1" author="Rodin">
+        <createTable tableName="role">
+            <column name="id" autoIncrement="true" type="int">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(10)"></column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
