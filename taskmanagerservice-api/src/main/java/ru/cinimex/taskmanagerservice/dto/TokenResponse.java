@@ -1,4 +1,4 @@
-package ru.cinimex.dto;
+package ru.cinimex.taskmanagerservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TokenResponse {
-
     private String accessToken;
 }

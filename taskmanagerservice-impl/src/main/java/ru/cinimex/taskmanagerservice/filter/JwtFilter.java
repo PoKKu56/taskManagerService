@@ -1,4 +1,4 @@
-package ru.cinimex.taskManagerService.filter;
+package ru.cinimex.taskmanagerservice.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,7 +12,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ru.cinimex.taskManagerService.service.JwtService;
+import ru.cinimex.taskmanagerservice.service.JwtService;
 
 import java.io.IOException;
 

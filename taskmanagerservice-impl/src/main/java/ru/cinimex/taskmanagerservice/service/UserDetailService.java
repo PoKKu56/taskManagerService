@@ -1,8 +1,7 @@
-package ru.cinimex.taskManagerService.service;
+package ru.cinimex.taskmanagerservice.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -10,16 +9,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import ru.cinimex.taskManagerService.domain.UserEntity;
-import ru.cinimex.taskManagerService.repository.UserRepository;
+import ru.cinimex.taskmanagerservice.domain.UserEntity;
+import ru.cinimex.taskmanagerservice.repository.UserRepository;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@RequiredArgsConstructor
 @Service
 public class UserDetailService implements UserDetailsService {
 

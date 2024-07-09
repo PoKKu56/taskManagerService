@@ -1,4 +1,4 @@
-package ru.cinimex.taskManagerService;
+package ru.cinimex.taskmanagerservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

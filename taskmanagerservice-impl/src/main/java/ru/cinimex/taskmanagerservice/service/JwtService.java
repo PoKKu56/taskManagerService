@@ -1,4 +1,4 @@
-package ru.cinimex.taskManagerService.service;
+package ru.cinimex.taskmanagerservice.service;
 
 
 import io.jsonwebtoken.Claims;
