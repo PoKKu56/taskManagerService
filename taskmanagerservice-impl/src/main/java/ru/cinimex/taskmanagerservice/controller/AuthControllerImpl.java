@@ -14,6 +14,7 @@ import ru.cinimex.taskmanagerservice.service.UserService;
 
 import java.sql.SQLOutput;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @CrossOrigin
@@ -31,33 +32,24 @@ public class AuthControllerImpl implements AuthController {
                 new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
         );
 
-        System.out.println(authentication);
         return ResponseEntity.ok(new TokenResponse(jwtService.generateToken(authentication)));
     }
 
     @Override
-    public ResponseEntity<CurrentUserResponse> getCurrentUser() {
+    public ResponseEntity<CurrentUserResponse> getCurrentUser(String token) {
 
-        Optional<UserEntity> user = userService.getCurrentUser();
+        Optional<UserEntity> user = userService.getCurrentUser(token);
 
-        if (user.isPresent()) {
-            return ResponseEntity.ok(new CurrentUserResponse(user.get().getUsername(),user.get().getEmail(),
-                    user.get().getRole()));
-        }
-
-        return ResponseEntity.notFound().build();
+        return user.map(userEntity -> ResponseEntity.ok(new CurrentUserResponse(userEntity.getUsername(),
+                userEntity.getEmail(), userEntity.getRole()))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Override
-    public ResponseEntity<CurrentUserResponse> getAdminUser(Integer id) {
+    public ResponseEntity<CurrentUserResponse> getAdminUser(UUID id) {
 
-        Optional<UserEntity> user = userService.getCurrentUser();
+        Optional<UserEntity> user = userService.getCurrentUserById(id);
 
-        if (user.isPresent()) {
-            return ResponseEntity.ok(new CurrentUserResponse(user.get().getUsername(), user.get().getEmail(),
-                    user.get().getRole()));
-        }
-
-        return ResponseEntity.notFound().build();
+        return user.map(userEntity -> ResponseEntity.ok(new CurrentUserResponse(userEntity.getUsername(),
+                userEntity.getEmail(), userEntity.getRole()))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

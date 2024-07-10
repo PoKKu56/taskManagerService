@@ -31,7 +31,7 @@ import ru.cinimex.taskmanagerservice.service.UserDetailService;
 public class SecurityConfig {
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -52,9 +52,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authHttp ->{
-                    authHttp.requestMatchers("/auth/login", "/register", "register/code", "/error").permitAll()
-                            .requestMatchers("/admin/user/").permitAll()
-                    .anyRequest().authenticated();
+                    authHttp
+                            /*.requestMatchers("/auth/login", "/register", "register/code", "/error").permitAll()
+                            .requestMatchers("/admin/user/").hasRole("ADMIN")*/
+                    .anyRequest().permitAll();
                 })
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
