@@ -16,8 +16,6 @@ import ru.cinimex.taskmanagerservice.domain.EmailMessage;
 @RequiredArgsConstructor
 public class ProducerVerificationService {
 
-    private final EmailSenderService emailSenderService;
-
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Producer.class);
     private static final String TOPIC = "email-topic";
@@ -31,8 +29,6 @@ public class ProducerVerificationService {
                 .setHeader(KafkaHeaders.TOPIC, TOPIC)
                 .build();
         this.kafkaTemplate.send(message);
-
-        emailSenderService.sendConfirmationMessage(msg);
     }
 
 }

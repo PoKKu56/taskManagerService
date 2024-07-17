@@ -12,10 +12,12 @@ public interface AuthController {
     @PostMapping("/auth/login")
     ResponseEntity<TokenResponse> login(@RequestBody AuthRequest authRequest);
 
-    @GetMapping("/users/{token}")
-    ResponseEntity<CurrentUserResponse> getCurrentUser(@PathVariable("token") String token);
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @GetMapping("/users")
+    ResponseEntity<?> getCurrentUser();
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/user/{id}")
-    ResponseEntity<CurrentUserResponse> getAdminUser(@PathVariable("id") UUID id);
+    ResponseEntity<?> getAdminUser(@PathVariable("id") UUID id);
 
 }

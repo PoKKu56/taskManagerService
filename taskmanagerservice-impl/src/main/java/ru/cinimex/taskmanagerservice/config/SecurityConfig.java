@@ -50,12 +50,10 @@ public class SecurityConfig {
                                                    AuthenticationProvider authenticationProvider) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authHttp ->{
                     authHttp
-                            /*.requestMatchers("/auth/login", "/register", "register/code", "/error").permitAll()
-                            .requestMatchers("/admin/user/").hasRole("ADMIN")*/
-                    .anyRequest().permitAll();
+                            .requestMatchers("/auth/login", "/register", "register/code", "/error").permitAll()
+                    .anyRequest().authenticated();
                 })
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

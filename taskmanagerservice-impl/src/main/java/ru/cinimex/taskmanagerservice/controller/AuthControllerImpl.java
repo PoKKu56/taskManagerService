@@ -7,13 +7,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
-import ru.cinimex.taskmanagerservice.domain.UserEntity;
 import ru.cinimex.taskmanagerservice.dto.*;
 import ru.cinimex.taskmanagerservice.service.JwtService;
 import ru.cinimex.taskmanagerservice.service.UserService;
 
-import java.sql.SQLOutput;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -31,25 +28,16 @@ public class AuthControllerImpl implements AuthController {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
         );
-
         return ResponseEntity.ok(new TokenResponse(jwtService.generateToken(authentication)));
     }
 
     @Override
-    public ResponseEntity<CurrentUserResponse> getCurrentUser(String token) {
-
-        Optional<UserEntity> user = userService.getCurrentUser(token);
-
-        return user.map(userEntity -> ResponseEntity.ok(new CurrentUserResponse(userEntity.getUsername(),
-                userEntity.getEmail(), userEntity.getRole()))).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> getCurrentUser() {
+        return userService.getCurrentUser();
     }
 
     @Override
-    public ResponseEntity<CurrentUserResponse> getAdminUser(UUID id) {
-
-        Optional<UserEntity> user = userService.getCurrentUserById(id);
-
-        return user.map(userEntity -> ResponseEntity.ok(new CurrentUserResponse(userEntity.getUsername(),
-                userEntity.getEmail(), userEntity.getRole()))).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> getAdminUser(UUID id) {
+        return userService.getCurrentUserById(id);
     }
 }
