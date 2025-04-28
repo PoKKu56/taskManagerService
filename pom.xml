@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.3.1</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>ru.cinimex</groupId>
+	<artifactId>taskManagerService</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>taskManagerService</name>
+	<description>First Global Studying Project</description>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+    <modules>
+        <module>taskmanagerservice-impl</module>
+		<module>taskmanagerservice-db</module>
+		<module>taskmanagerservice-api</module>
+	</modules>
+    <scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>22</java.version>
+		<spring-core.version>6.1.10</spring-core.version>
+		<jwt.version>0.12.6</jwt.version>
+		<email.version>3.3.1</email.version>
+		<spring.kafka>3.2.1</spring.kafka>
+		<jakson.version>2.17.2</jakson.version>
+		<mapstruct.version>1.5.5.Final</mapstruct.version>
+	</properties>
+</project>
