@@ -2,9 +2,6 @@ package ru.cinimex.taskmanagerservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 import ru.cinimex.taskmanagerservice.dto.*;
@@ -18,26 +15,28 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthControllerImpl implements AuthController {
 
-    private final AuthenticationManager authenticationManager;
 
     private final JwtService jwtService;
     private final UserService userService;
 
     @Override
     public ResponseEntity<TokenResponse> login(AuthRequest authRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
-        );
-        return ResponseEntity.ok(new TokenResponse(jwtService.generateToken(authentication)));
+        return ResponseEntity.ok(new TokenResponse(jwtService.generateToken(
+                userService.loginUser(authRequest))));
     }
 
     @Override
-    public ResponseEntity<?> getCurrentUser() {
-        return userService.getCurrentUser();
+    public ResponseEntity<CurrentUserResponse> getCurrentUser() {
+        return ResponseEntity.ok(userService.getCurrentUser());
     }
 
     @Override
-    public ResponseEntity<?> getAdminUser(UUID id) {
-        return userService.getCurrentUserById(id);
+    public ResponseEntity<CurrentUserResponse> getAdminUser(UUID id) {
+        return ResponseEntity.ok(userService.getCurrentUserById(id));
+    }
+
+    @Override
+    public ResponseEntity<TokenResponse> generateTechToken(CreateTechTokenRequest createTechTokenRequest) {
+        return ResponseEntity.ok(userService.createTechToken(createTechTokenRequest));
     }
 }

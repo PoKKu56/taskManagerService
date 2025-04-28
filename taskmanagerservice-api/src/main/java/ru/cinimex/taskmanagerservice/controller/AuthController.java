@@ -14,10 +14,14 @@ public interface AuthController {
 
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     @GetMapping("/users")
-    ResponseEntity<?> getCurrentUser();
+    ResponseEntity<CurrentUserResponse> getCurrentUser();
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TECH')")
+    @GetMapping("/admin/user/{id}")
+    ResponseEntity<CurrentUserResponse> getAdminUser(@PathVariable("id") UUID id);
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/user/{id}")
-    ResponseEntity<?> getAdminUser(@PathVariable("id") UUID id);
+    @PostMapping("/admin/tech/token")
+    ResponseEntity<TokenResponse> generateTechToken(@RequestBody CreateTechTokenRequest createTechTokenRequest);
 
 }

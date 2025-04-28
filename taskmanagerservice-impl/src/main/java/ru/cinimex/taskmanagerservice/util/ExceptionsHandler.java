@@ -11,12 +11,21 @@ public class ExceptionsHandler {
 
     @ExceptionHandler(RegisterError.class)
     ResponseEntity<?> registerError(final RegisterError registerError) {
-        return ResponseEntity.status(HttpStatusCode.valueOf(401)).body(registerError.getMessage());
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(registerError.getMessage());
     }
 
-    @ExceptionHandler(UnknowUserError.class)
-    ResponseEntity<?> unknowUserError(final UnknowUserError unknowUserError) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(unknowUserError.getMessage());
+    @ExceptionHandler(UnknownUserError.class)
+    ResponseEntity<?> unknownUserError(final UnknownUserError unknownUserError) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(unknownUserError.getMessage());
+    }
+    @ExceptionHandler(CheckCodeError.class)
+    ResponseEntity<?> checkCodeError(final CheckCodeError checkCodeError) {
+        return ResponseEntity.status(HttpStatus.valueOf(500)).body(checkCodeError.getMessage());
+    }
+
+    @ExceptionHandler(loginError.class)
+    ResponseEntity<?> loginError(final loginError loginError) {
+        return ResponseEntity.status(HttpStatus.valueOf(403)).body(loginError.getMessage());
     }
 
 }

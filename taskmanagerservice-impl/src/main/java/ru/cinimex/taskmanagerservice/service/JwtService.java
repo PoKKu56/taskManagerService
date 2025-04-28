@@ -13,9 +13,8 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.time.Duration;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.OffsetDateTime;
+import java.util.*;
 import java.util.function.Function;
 
 
@@ -27,6 +26,7 @@ public class JwtService {
 
     @Value("${jwt.lifetime}")
     private Duration durationLifeTime;
+
 
     public String generateToken(Authentication authenticate) {
 
@@ -47,6 +47,21 @@ public class JwtService {
                     .compact();
         }
         throw new IllegalArgumentException("Incorrect type of authentication principal");
+    }
+
+    public String generateTechToken(OffsetDateTime expiredDate){
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("roles", List.of("ROLE_TECH"));
+
+        Date issuedDate = new Date();
+
+        return Jwts.builder()
+                .claims(claims)
+                .subject("tech_admin")
+                .issuedAt(issuedDate)
+                .expiration(Date.from(expiredDate.toInstant()))
+                .signWith(getSecretKey(), Jwts.SIG.HS256)
+                .compact();
     }
 
     private SecretKey getSecretKey() {
@@ -75,7 +90,7 @@ public class JwtService {
                 .getPayload();
     }
 
-    public boolean isTokenExpired(String token){
+    private boolean isTokenExpired(String token){
         return executeExpirationDate(token).before(new Date());
     }
 

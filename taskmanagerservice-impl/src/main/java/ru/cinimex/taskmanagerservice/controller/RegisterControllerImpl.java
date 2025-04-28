@@ -1,6 +1,7 @@
 package ru.cinimex.taskmanagerservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,12 +20,14 @@ public class RegisterControllerImpl implements RegisterController {
 
     @Override
     public ResponseEntity<?> register(RegisterRequest registerRequest) {
-        return userService.convertAndSaveUser(registerRequest);
+        return ResponseEntity.status(HttpStatusCode.valueOf(200))
+                .body((userService.convertAndSaveUser(registerRequest)));
     }
 
     @Override
-    public ResponseEntity<?> registerCode(RegisterConfirmationRequest registerConfirmationRequest) {
-        return userService.checkEmailCode(registerConfirmationRequest);
+    public ResponseEntity<RegisterResponse> registerCode(RegisterConfirmationRequest registerConfirmationRequest) {
+        return ResponseEntity.status(HttpStatusCode.valueOf(200))
+                .body(userService.checkEmailCode(registerConfirmationRequest));
     }
 
 }

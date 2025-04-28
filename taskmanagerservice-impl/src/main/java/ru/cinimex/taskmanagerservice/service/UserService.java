@@ -1,8 +1,10 @@
 package ru.cinimex.taskmanagerservice.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,18 +12,17 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.cinimex.taskmanagerservice.domain.EmailMessage;
 import ru.cinimex.taskmanagerservice.domain.TempCodeEntity;
 import ru.cinimex.taskmanagerservice.domain.UserEntity;
-import ru.cinimex.taskmanagerservice.dto.CurrentUserResponse;
-import ru.cinimex.taskmanagerservice.dto.RegisterConfirmationRequest;
-import ru.cinimex.taskmanagerservice.dto.RegisterRequest;
-import ru.cinimex.taskmanagerservice.dto.RegisterResponse;
+import ru.cinimex.taskmanagerservice.dto.*;
 import ru.cinimex.taskmanagerservice.mapper.UserMapper;
 import ru.cinimex.taskmanagerservice.repository.TempCodeRepository;
 import ru.cinimex.taskmanagerservice.repository.UserRepository;
+import ru.cinimex.taskmanagerservice.util.CheckCodeError;
 import ru.cinimex.taskmanagerservice.util.RegisterError;
-import ru.cinimex.taskmanagerservice.util.UnknowUserError;
+import ru.cinimex.taskmanagerservice.util.UnknownUserError;
+import ru.cinimex.taskmanagerservice.util.loginError;
 
 import java.util.Date;
-import java.util.Optional;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
@@ -36,27 +37,17 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final Random random = new Random();
     private final ProducerVerificationService producerVerificationService;
-
-    public Optional<UserEntity> findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    public Optional<UserEntity> findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
-
-    public Optional<UserEntity> findById(UUID id) {
-        return userRepository.findById(id);
-    }
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     @Transactional
-    public ResponseEntity<?> convertAndSaveUser(RegisterRequest registerRequest){
+    public RegisterResponse convertAndSaveUser(RegisterRequest registerRequest){
 
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()){
-            return ResponseEntity.status(HttpStatusCode.valueOf(400)).body("Пользователь уже существует");
+            throw new RegisterError("Пользователь с таким логином уже существует");
         }
         else if(userRepository.findByEmail(registerRequest.getEmail()).isPresent()){
-            return ResponseEntity.status(HttpStatusCode.valueOf(500)).body("Пользователь с таким email существует");
+            throw new RegisterError("Пользователь с такой почтой уже существует");
         }
         UserEntity userEntity = userMapper.userDtoToEntity(registerRequest);
         userEntity.setPassword(passwordEncoder.encode(userEntity.getPassword()));
@@ -73,52 +64,106 @@ public class UserService {
         userRepository.save(userEntity);
         tempCodeRepository.save(tempCodeEntity);
 
-        return ResponseEntity.ok(new RegisterResponse("Успешная регистрация",
-                userEntity.getId()));
+        return new RegisterResponse("Успешная регистрация", userEntity.getId());
     }
 
     @Transactional
-    public ResponseEntity<?> checkEmailCode(RegisterConfirmationRequest registerConfirmationRequest){
-        Optional<UserEntity> userEntity = userRepository.findById(registerConfirmationRequest.getId());
-        if(userEntity.isPresent() && !userEntity.get().isActive()){
-            Optional<TempCodeEntity> tempCodeEntity = tempCodeRepository.findByUser(userEntity);
-            if (tempCodeEntity.isPresent() &&
-                    tempCodeEntity.get().getCode().equals(registerConfirmationRequest.getCode())){
-                userEntity.get().setActive(true);
-                userEntity.get().setUpdatedAt(new Date());
-                userRepository.save(userEntity.get());
-                return ResponseEntity.ok(new RegisterResponse("Успешная регистрация",
-                        userEntity.get().getId()));
+    public RegisterResponse checkEmailCode(RegisterConfirmationRequest registerConfirmationRequest){
+        UserEntity userEntity = userRepository.findById(registerConfirmationRequest.getId()).orElseThrow(() ->
+                new RegisterError("Пользователь с таким id не найден"));
+
+        if(!userEntity.isActive()){
+            TempCodeEntity tempCodeEntity = tempCodeRepository.findByUser(userEntity).orElseThrow(() ->
+                    new CheckCodeError("Проверочный код не найден на сервере"));
+
+            if (tempCodeEntity.getCode().equals(registerConfirmationRequest.getCode())){
+
+                userEntity.setActive(true);
+                userEntity.setUpdatedAt(new Date());
+                userRepository.save(userEntity);
+                tempCodeRepository.delete(tempCodeEntity);
+                return new RegisterResponse("Успешная регистрация",
+                        userEntity.getId());
             }
+
             else{
-                return ResponseEntity.status(HttpStatusCode.valueOf(422)).body("Неверный код");
+                throw new RegisterError("Неверный код");
             }
         }
-        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body("Пользователь уже существует");
+        throw new RegisterError("Пользователь уже активировал аккаунт");
     }
 
-    public ResponseEntity<CurrentUserResponse> getCurrentUser(){
+    public CurrentUserResponse getCurrentUser(){
 
-        Optional<UserEntity> user = userRepository
-                .findByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+        checkJwtToken();
 
-        if (user.isEmpty()){
-            throw new UnknowUserError("Такого пользователя не существует");
+        UserEntity user = userRepository
+                .findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UnknownUserError("Такого пользователя не существует"));
+
+        if (!user.getRole().equals("ROLE_USER") && !user.getRole().equals("ROLE_ADMIN")){
+            throw new loginError("Отказ в доступе");
         }
 
-        return ResponseEntity.ok(new CurrentUserResponse(user.get().getUsername(), user.get().getEmail(),
-                user.get().getRole()));
+        return new CurrentUserResponse(user.getUsername(), user.getEmail(),
+                user.getRole());
     }
 
-    public ResponseEntity<CurrentUserResponse> getCurrentUserById(UUID id){
+    public CurrentUserResponse getCurrentUserById(UUID id){
 
-        Optional<UserEntity> user = userRepository.findById(id);
+        checkJwtToken();
 
-        if (user.isEmpty()){
-            throw new UnknowUserError("Такого пользователя не существует");
+        UserEntity user = userRepository.findById(id).orElseThrow(
+                () -> new UnknownUserError("Такого пользователя не существует") );
+
+        checkTokenRoles(List.of("ROLE_TECH", "ROLE_ADMIN"));
+
+        return new CurrentUserResponse(user.getUsername(), user.getEmail(),
+                user.getRole());
+    }
+
+    public Authentication loginUser(AuthRequest authRequest){
+        UserEntity user = userRepository.findByUsername(authRequest.getUsername()).orElseThrow(
+                () -> new loginError("Пользователь с таким логином не найден")
+        );
+
+        if (!passwordEncoder.matches(authRequest.getPassword(), user.getPassword())){
+            throw new loginError("Неверный логин/пароль");
         }
 
-        return ResponseEntity.ok(new CurrentUserResponse(user.get().getUsername(), user.get().getEmail(),
-                user.get().getRole()));
+        return authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
+        );
     }
+
+    public TokenResponse createTechToken(CreateTechTokenRequest createTechTokenRequest){
+
+        checkJwtToken();
+
+        UserEntity user = userRepository
+                .findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new UnknownUserError("Такого пользователя не существует"));
+
+        checkTokenRoles(List.of("ROLE_ADMIN"));
+
+        return new TokenResponse(jwtService.generateTechToken(createTechTokenRequest.getExpiredDate()));
+    }
+
+
+    private void checkJwtToken(){
+
+        if (SecurityContextHolder.getContext() == null){
+            throw new UnknownUserError("Отсутствует JWT-токен");
+        }
+
+    }
+
+    private void checkTokenRoles(List<String> roles){
+
+        if (SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .noneMatch(roles::contains))
+            throw new loginError("Отказано в доступе");
+    }
+
 }
